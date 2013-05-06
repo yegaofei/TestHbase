@@ -9,6 +9,8 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.io.hfile.Compression;
+import org.apache.hadoop.hbase.regionserver.ConstantSizeRegionSplitPolicy;
 import org.apache.hadoop.hbase.util.Bytes;
 
 /** 
@@ -21,7 +23,7 @@ public class TicDataTestMain {
 
     private Configuration conf;
 
-    private static final int SYMBOL_COUNT = 190009; // Totally we have 190009
+    private static final int SYMBOL_COUNT = 1000; // Totally we have 190009
     // symbols in
     // TicSymbolAndCount.txt, for
     // time-being reason, we don't
@@ -48,7 +50,9 @@ public class TicDataTestMain {
     }
     
     public static void main(String[] args) {
-        TicDataTestMain testMain = new TicDataTestMain(HBaseConfiguration.create());
+    	Configuration conf = HBaseConfiguration.create();
+        // conf.set("hbase.zookeeper.quorum", "localhost");
+        TicDataTestMain testMain = new TicDataTestMain(conf);
 
         try {
             testMain.createTables();
@@ -111,19 +115,19 @@ public class TicDataTestMain {
 
     public void createTables() throws IOException {
         byte[][] sBarFamilyNames = { SYMBOL_FAMILY_NAME };
-        createTable(SYMBOL_TABLE_NAME, sBarFamilyNames, 1, 1, 200000, 3);
+        createTable(SYMBOL_TABLE_NAME, sBarFamilyNames, 1);
         
         byte[][] sTicFamilyNames = { FAMILY_NAME };
-        createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3, 0, 800000000, 1000);
-
+        //createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3, Bytes.toBytes(1000000), Bytes.toBytes(250000000), 10);
+        createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3);
+        
         byte[][] sQuoteFamilyNames = { FAMILY_NAME };
-        createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3, 0, 800000000, 1000);
+        // createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3, Bytes.toBytes(1000000), Bytes.toBytes(250000000), 100);
+        createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3);
     }
+    
+    private void createTable(String tableName, byte[][] familyNames, int maxVersions) throws IOException {
 
-    private void createTable(String tableName, byte[][] familyNames, int maxVersions, int startKey,
-                             int endKey, int regionNum)
-                                                                                     throws IOException {
-        // Configuration conf = HBaseConfiguration.create();
         HBaseAdmin admin = new HBaseAdmin(this.conf);
         {
             boolean tableAvailable = admin.isTableAvailable(tableName);
@@ -137,14 +141,39 @@ public class TicDataTestMain {
             HColumnDescriptor hd = new HColumnDescriptor(familyName);
             hd.setMaxVersions(maxVersions);
             hd.setInMemory(true);
+            hd.setCompressionType(Compression.Algorithm.LZO);
             tableDescriptor.addFamily(hd);
         }
+        tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());
+        admin.createTable(tableDescriptor);
 
+        boolean tableAvailable = admin.isTableAvailable(tableName);
+        if (tableAvailable) {
+            System.out.println("table created:" + tableName);
+        }
+        admin.close();
+    }
 
-        byte[] sKey = Bytes.toBytes(startKey); // your lowest keuy
-        byte[] eKey = Bytes.toBytes(endKey); // your highest key
-        int numberOfRegions = regionNum; // # of regions to create
-        admin.createTable(tableDescriptor, sKey, eKey, numberOfRegions);
+    private void createTable(String tableName, byte[][] familyNames, int maxVersions, byte[] startKey, byte[] endKey, int regionNum)
+                                                                                     throws IOException {
+        HBaseAdmin admin = new HBaseAdmin(this.conf);
+        {
+            boolean tableAvailable = admin.isTableAvailable(tableName);
+            if (tableAvailable) {
+                deleteTable(tableName);
+            }
+        }
+
+        HTableDescriptor tableDescriptor = new HTableDescriptor(tableName);
+        for (byte[] familyName : familyNames) {
+            HColumnDescriptor hd = new HColumnDescriptor(familyName);
+            hd.setMaxVersions(maxVersions);
+            hd.setInMemory(true);
+            hd.setCompressionType(Compression.Algorithm.LZO);
+            tableDescriptor.addFamily(hd);
+        }
+       // tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());
+        admin.createTable(tableDescriptor, startKey, endKey, regionNum);
 
         boolean tableAvailable = admin.isTableAvailable(tableName);
         if (tableAvailable) {

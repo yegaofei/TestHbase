@@ -119,6 +119,7 @@ public class TicDataWriter implements Runnable {
             int tradeCount = Math.round(count / 10);
             TicTradeCID[] ticTrade = this.tdg.generateTicTradeCID(symbol, tradeCount);
 
+            long putHeapSize = 0 ;
             List<Put> putList = new LinkedList<Put>();
             for (int k = 0; k < ticTrade.length; k++) {
                 TicTradeCID trade = ticTrade[k];
@@ -149,11 +150,13 @@ public class TicDataWriter implements Runnable {
                         Bytes.toBytes(trade.getuCumVolume()));
                 put.add(FAMILY_NAME, COLUMN_VOLQUALIFIERS,
                         trade.getVolqualifiers());
+                putHeapSize += put.heapSize();
                 putList.add(put);
 
-                if ((k % 500 == 0) && (k > 0)) {
+                if ((k % 1000 == 0) && (k > 0)) {
                     this.ticTradetable.put(putList);
                     putList = new LinkedList<Put>();
+                    putHeapSize = 0 ;
                 }
             }
 
@@ -194,7 +197,7 @@ public class TicDataWriter implements Runnable {
                         Bytes.toBytes(quote.getiAskSize()));
                 putListQuote.add(put);
 
-                if ((k % 500 == 0) && (k > 0)) {
+                if ((k % 1000 == 0) && (k > 0)) {
                         this.ticQuoteTable.put(putListQuote);
                         putListQuote = new LinkedList<Put>();
                 }
