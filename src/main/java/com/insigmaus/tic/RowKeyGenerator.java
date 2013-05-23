@@ -9,12 +9,6 @@ package com.insigmaus.tic;
 
 public class RowKeyGenerator {
 
-    private static final int BUCKET_SIZE = 700720;
-
-    public static int getBucketSize() {
-        return BUCKET_SIZE;
-    }
-
     public static int generateRowKey(int startKey, int offset) {
         int rowKey = startKey + offset;
 
@@ -42,10 +36,6 @@ public class RowKeyGenerator {
 
         System.out.println(timeStamp - startTime);
 
-        long x = BUCKET_SIZE * 190009; // 1683344640
-        System.out.println(x);
-        long m = x / 190009;
-        System.out.println(m);
 
     }
 }

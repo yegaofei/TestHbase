@@ -1,6 +1,5 @@
-package com.insigmaus.tic;
+package com.insigma.tickserver;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -9,7 +8,6 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.io.hfile.Compression;
 import org.apache.hadoop.hbase.regionserver.ConstantSizeRegionSplitPolicy;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -19,63 +17,33 @@ import org.apache.hadoop.hbase.util.Bytes;
  * @version V1.0  Create Time: Apr 27, 2013
  */
 
-public class TicDataTestMain {
+public class WRFTestWriteMain {
 
     private Configuration conf;
-
-    private static final int SYMBOL_COUNT = 1000; // Totally we have 190009
-    // symbols in
-    // TicSymbolAndCount.txt, for
-    // time-being reason, we don't
-    // use all of them
 
     private static final int PROCESS_COUNT = 1;
 
     public static final byte[] FAMILY_NAME = Bytes.toBytes("cf");
 
-    private static final String TIC_TRADE_TABLE_NAME = "Tic_Trade";
-
-    private static final String TIC_QUOTE_TABLE_NAME = "Tic_Quote";
-
-    private static final String SYMBOL_TABLE_NAME = "Symbol";
-
-    private static final byte[] SYMBOL_FAMILY_NAME = Bytes.toBytes("ID");
+    private static final String WRF_TABLE_NAME = "WinROSFlowRecord";
 
     private CountDownLatch countDownLatch;
 
-    private SymbolCount[] symbolCountArray = null;
-
-    public TicDataTestMain(Configuration conf) {
+    public WRFTestWriteMain(Configuration conf) {
         this.conf = conf;
     }
     
     public static void main(String[] args) {
     	Configuration conf = HBaseConfiguration.create();
-        // conf.set("hbase.zookeeper.quorum", "10.0.37.20");
-        conf.set("hbase.rpc.timeout", "600000");
-        TicDataTestMain testMain = new TicDataTestMain(conf);
+    	conf.set("hbase.zookeeper.quorum", "localhost");
+        WRFTestWriteMain testMain = new WRFTestWriteMain(conf);
 
         try {
             testMain.createTables();
 
-
-            TicDataGenerate tdg = new TicDataGenerate();
-            try {
-                tdg.readCountFile("TicSymbolAndCount.txt", SYMBOL_COUNT);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return;
-            }
-            SymbolCount[] symbolCountArray = tdg.getSymbolCountArray();
-            SymbolDataTool sydw = new SymbolDataTool(testMain.conf);
-            sydw.processSymbolData(symbolCountArray);
-            System.out.println("Symbol table has been populdated.");
-
-            testMain.setSymbolCountArray(symbolCountArray);
-
             long startTime = System.currentTimeMillis();
-            testMain.processTicData();
-            System.out.println("Inserting " + SYMBOL_COUNT + " symbols by spending "
+            testMain.processWRFData();
+            System.out.println("Inserting  by spending "
                     + (System.currentTimeMillis() - startTime));
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -83,34 +51,19 @@ public class TicDataTestMain {
         }
     }
 
-    public void processTicData() {
-        int lengthOfSegment = SYMBOL_COUNT / PROCESS_COUNT;
-        while ((lengthOfSegment * PROCESS_COUNT) < SYMBOL_COUNT)
-            lengthOfSegment++;
+    public void processWRFData() {
 
-        countDownLatch = new CountDownLatch(PROCESS_COUNT * 2);
+        countDownLatch = new CountDownLatch(PROCESS_COUNT);
 
         for (int i = 0; i < PROCESS_COUNT; i++) {
-            int startIndex = i * lengthOfSegment;
-            int endIndex = startIndex + lengthOfSegment;
-            if (endIndex > SYMBOL_COUNT) {
-                endIndex = SYMBOL_COUNT;
-            }
 
-            TicDataWriter tqdw = new TicQuoteDataWriter(startIndex, endIndex);
-            tqdw.setCountDownLatch(countDownLatch);
-            tqdw.setSymbolCountArray(symbolCountArray);
-            tqdw.setConf(this.conf);
-            Thread t = new Thread(tqdw);
+            WRFDataWriter tdw = new WRFDataWriter();
+            tdw.setCountDownLatch(countDownLatch);
+            
+            tdw.setConf(this.conf);
+
+            Thread t = new Thread(tdw);
             t.start();
-
-            TicDataWriter ttdw = new TicTradeDataWriter(startIndex, endIndex);
-            ttdw.setCountDownLatch(countDownLatch);
-            ttdw.setSymbolCountArray(symbolCountArray);
-            ttdw.setConf(this.conf);
-            Thread t2 = new Thread(ttdw);
-            t2.start();
-
         }
 
         try {
@@ -122,20 +75,8 @@ public class TicDataTestMain {
     }
 
     public void createTables() throws IOException {
-        byte[][] sBarFamilyNames = { SYMBOL_FAMILY_NAME };
-        createTable(SYMBOL_TABLE_NAME, sBarFamilyNames, 1);
-        
-        byte[][] sTicFamilyNames = { FAMILY_NAME };
-        // createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3,
-        // Bytes.toBytes(1000000),
-        // Bytes.toBytes(720000000), 10);
-        createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3);
-        
-        byte[][] sQuoteFamilyNames = { FAMILY_NAME };
-        // createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3,
-        // Bytes.toBytes(1000000),
-        // Bytes.toBytes(720000000), 100);
-        createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3);
+        byte[][] sBarFamilyNames = { FAMILY_NAME };
+        createTable(WRF_TABLE_NAME, sBarFamilyNames, 3);
     }
     
     private void createTable(String tableName, byte[][] familyNames, int maxVersions) throws IOException {
@@ -152,8 +93,7 @@ public class TicDataTestMain {
         for (byte[] familyName : familyNames) {
             HColumnDescriptor hd = new HColumnDescriptor(familyName);
             hd.setMaxVersions(maxVersions);
-            // hd.setInMemory(true);
-            hd.setCompressionType(Compression.Algorithm.LZO);
+            hd.setInMemory(true);
             tableDescriptor.addFamily(hd);
         }
         tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());
@@ -180,12 +120,10 @@ public class TicDataTestMain {
         for (byte[] familyName : familyNames) {
             HColumnDescriptor hd = new HColumnDescriptor(familyName);
             hd.setMaxVersions(maxVersions);
-            // hd.setInMemory(true);
-            hd.setCompressionType(Compression.Algorithm.LZO);
+            hd.setInMemory(true);
             tableDescriptor.addFamily(hd);
         }
-        tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY,
-                                 ConstantSizeRegionSplitPolicy.class.getName());
+       // tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());
         admin.createTable(tableDescriptor, startKey, endKey, regionNum);
 
         boolean tableAvailable = admin.isTableAvailable(tableName);
@@ -212,13 +150,6 @@ public class TicDataTestMain {
         admin.close();
     }
 
-    public SymbolCount[] getSymbolCountArray() {
-        return symbolCountArray;
-    }
-
-    public void setSymbolCountArray(SymbolCount[] symbolCountArray) {
-        this.symbolCountArray = symbolCountArray;
-    }
 
 }
 
