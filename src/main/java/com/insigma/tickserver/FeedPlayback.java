@@ -80,7 +80,7 @@ public class FeedPlayback implements Closeable {
 		byte[] rawRecord = new byte[WinROSFlowRecord.RECORD_SIZE];
 
 //		System.out.println(Bytes.toShort(dwTime));
-//		System.out.println(nRecs[0]);
+        // System.out.println(nRecs[0]);
 
 		batchRecords = new WinROSFlowRecord[numRecs];
 		batchRecordsIndex = 0;
@@ -92,27 +92,31 @@ public class FeedPlayback implements Closeable {
 			totalRecordsRead++;
 			totalBytesRead += rawRecord.length;
 			
-			// System.out.println(records[i].dwPreSignature);
-			// System.out.println(records[i].RecordType);
-//			System.out.println(records[i].Symbol);
-//			System.out.println(records[i].TickData.VWap);
-//			System.out.println(Bytes
-//					.toString(records[i].TickData.Bid.exchange));
-//			System.out.println(records[i].TickData.Bid.value);
-//			System.out.println(records[i].TickData.Bid.size);
-//			System.out.println(Bytes
-//					.toString(records[i].TickData.Ask.exchange));
-//			System.out.println(records[i].TickData.Ask.value);
-//			System.out.println(records[i].TickData.Ask.size);
-//			System.out.println(Bytes
-//					.toString(records[i].TickData.Trade.exchange));
-//			System.out.println(records[i].TickData.Trade.value);
-//			System.out.println(records[i].TickData.Trade.size);
-			//
-			// System.out.println(records[i].dwPostSignature);
-//			System.out.println("-----------------------------------");
+            /*
+             * System.out.println(batchRecords[i].dwPreSignature);
+             * System.out.println(batchRecords[i].TickData.ExchangeTime);
+             * System.out.println(batchRecords[i].RecordType);
+             * System.out.println(batchRecords[i].Symbol);
+             * System.out.println(batchRecords[i].TickData.VWap);
+             * System.out.println(new
+             * String(batchRecords[i].TickData.Bid.exchange));
+             * System.out.println(batchRecords[i].TickData.Bid.value);
+             * System.out.println(batchRecords[i].TickData.Bid.size);
+             * System.out.println(new
+             * String(batchRecords[i].TickData.Ask.exchange));
+             * System.out.println(batchRecords[i].TickData.Ask.value);
+             * System.out.println(batchRecords[i].TickData.Ask.size);
+             * System.out.println(new
+             * String(batchRecords[i].TickData.Trade.exchange));
+             * System.out.println(batchRecords[i].TickData.Trade.value);
+             * System.out.println(batchRecords[i].TickData.Trade.size);
+             * 
+             * System.out.println(batchRecords[i].dwPostSignature);
+             * System.out.println("-----------------------------------");
+             */
 		}
 		
+
 		return true;
 	}
 	
@@ -176,9 +180,14 @@ public class FeedPlayback implements Closeable {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Please input the flowrecords file path and name");
+            System.exit(-1);
+        }
+
 		try {
 
-            FeedPlayback playback = new FeedPlayback("E:\\flowrecords\\flowrecords.bin");
+            FeedPlayback playback = new FeedPlayback(args[0]);
 			WinROSFlowRecord record = null;
 
 			long total = 0;

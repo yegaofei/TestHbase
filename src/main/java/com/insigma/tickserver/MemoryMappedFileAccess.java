@@ -9,7 +9,7 @@ import java.nio.channels.FileChannel;
 
 public class MemoryMappedFileAccess implements Closeable {
 	
-	public static final int length = 0xFFFFFFF; // 256 Mb
+    public static final int length = 0x8FFFFFF; // 256 Mb
 	
 	private long fcPosition = 0;
 	
@@ -19,7 +19,7 @@ public class MemoryMappedFileAccess implements Closeable {
 	
 	private FileChannel fc = null;
 	
-	private WinROSFlowRecord[] batchRecords = new WinROSFlowRecord[0x0000FFF];
+    private WinROSFlowRecord[] batchRecords = new WinROSFlowRecord[0x000000F];
 	{
 		for(int i = 0 ; i < batchRecords.length; i++){
 			batchRecords[i] = new WinROSFlowRecord();

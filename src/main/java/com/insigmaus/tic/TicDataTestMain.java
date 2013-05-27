@@ -23,7 +23,7 @@ public class TicDataTestMain {
 
     private Configuration conf;
 
-    private static final int SYMBOL_COUNT = 1000; // Totally we have 190009
+    private static final int SYMBOL_COUNT = 190009; // Totally we have 190009
     // symbols in
     // TicSymbolAndCount.txt, for
     // time-being reason, we don't
@@ -128,13 +128,13 @@ public class TicDataTestMain {
         byte[][] sTicFamilyNames = { FAMILY_NAME };
         // createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3,
         // Bytes.toBytes(1000000),
-        // Bytes.toBytes(720000000), 10);
+        // Bytes.toBytes(720000000), 4);
         createTable(TIC_TRADE_TABLE_NAME, sTicFamilyNames, 3);
         
         byte[][] sQuoteFamilyNames = { FAMILY_NAME };
         // createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3,
         // Bytes.toBytes(1000000),
-        // Bytes.toBytes(720000000), 100);
+        // Bytes.toBytes(720000000), 40);
         createTable(TIC_QUOTE_TABLE_NAME, sQuoteFamilyNames, 3);
     }
     

@@ -126,13 +126,12 @@ public class TicTradeDataWriter implements TicDataWriter {
 
             insertedRows += tradeCount;
 
-            if (insertedRows > 100000) {
+            if (insertedRows > 1000000) {
                 long elaspTime = System.currentTimeMillis() - startTime;
-                System.out.print(Thread.currentThread().getName() + " inserted " + insertedRows
-                        + " rows tic trade data in past " + elaspTime + " ms, ");
+                System.out.print(Thread.currentThread().getName() + "-Trade, "
+                        + System.currentTimeMillis() + ", ");
                 double performance = (double) insertedRows / (double) elaspTime * 1000;
-                System.out.println("  Performance is " + performance + " r/s");
-
+                System.out.println(performance);
                 insertedRows = 0;
                 startTime = System.currentTimeMillis();
             }

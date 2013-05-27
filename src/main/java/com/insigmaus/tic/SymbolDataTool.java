@@ -1,8 +1,10 @@
 package com.insigmaus.tic;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Get;
@@ -31,6 +33,8 @@ public class SymbolDataTool {
 
     private Configuration conf;
 
+    private static final Map<String, SymbolData> CACHE = new HashMap<String, SymbolData>();
+
     public SymbolDataTool(Configuration conf) {
         this.conf = conf;
         try {
@@ -40,16 +44,21 @@ public class SymbolDataTool {
         }
     }
 
-    public void processSymbolData(SymbolCount[] symbolCountArray) throws IOException {
+    public synchronized void processSymbolData(SymbolCount[] symbolCountArray) throws IOException {
         int i = 0;
         List<Put> putList = new LinkedList<Put>();
+        SymbolData symbolData = null;
         for (SymbolCount sc : symbolCountArray) {
             byte[] key = sc.getSymbol().getBytes();
             Put put = new Put(key);
             put.add(SYMBOL_FAMILY_NAME, SYMBOL_START_QUALIFIER_NAME, Bytes.toBytes(i));
             put.add(SYMBOL_FAMILY_NAME, SYMBOL_END_QUALIFIER_NAME, Bytes.toBytes(i + sc.getCount()));
             putList.add(put);
+            symbolData = new SymbolData(sc.getSymbol(), i, i + sc.getCount());
+            CACHE.put(sc.getSymbol(), symbolData);
+
             i = i  + sc.getCount() + 1;
+
         }
         this.symbolTable.put(putList);
         this.symbolTable.flushCommits();
@@ -62,6 +71,12 @@ public class SymbolDataTool {
     }
 
     public SymbolData searchSymbolData(String symbol) throws IOException {
+
+        SymbolData symbolData = CACHE.get(symbol);
+        if (symbolData != null) {
+            return symbolData;
+        }
+
         Get getSymbolId = new Get(symbol.getBytes());
         Result r = symbolTable.get(getSymbolId);
         byte[] startKey = r.getValue(SYMBOL_FAMILY_NAME, SYMBOL_START_QUALIFIER_NAME);
@@ -73,7 +88,6 @@ public class SymbolDataTool {
 
         return new SymbolData(symbol, Bytes.toInt(startKey), Bytes.toInt(endKey));
     }
-
 
 }
 
