@@ -46,7 +46,7 @@ public class WRFTestWriteMain {
         }
 
     	Configuration conf = HBaseConfiguration.create();
-        conf.set("hbase.zookeeper.quorum", "10.0.37.20");
+        // conf.set("hbase.zookeeper.quorum", "10.0.37.20");
         WRFTestWriteMain testMain = new WRFTestWriteMain(conf);
         testMain.setFlowrecords(args[0]);
 
@@ -88,7 +88,12 @@ public class WRFTestWriteMain {
 
     public void createTables() throws IOException {
         byte[][] sBarFamilyNames = { FAMILY_NAME };
-        createTable(WRF_TABLE_NAME, sBarFamilyNames, 3);
+        createTable(WRF_TABLE_NAME,
+                    sBarFamilyNames,
+                    3,
+                    Bytes.toBytes(RegionInfo.MAX_ROW_PER_REGION),
+                    Bytes.toBytes(RegionInfo.MAX_ROW_PER_REGION
+                            * ((long) RegionInfo.REGION_COUNT - 1)), RegionInfo.REGION_COUNT);
     }
     
     private void createTable(String tableName, byte[][] familyNames, int maxVersions) throws IOException {
