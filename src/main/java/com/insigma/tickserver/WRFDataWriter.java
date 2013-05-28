@@ -112,7 +112,7 @@ public class WRFDataWriter implements Runnable {
 		while ((record = playback.next()) != null) {
 			total++;  //totally we have 31843557
     	
-            byte[] key = Bytes.toBytes(total);
+            byte[] key = RegionInfo.keyGenerate(total);
 			Put put = new Put(key);
 			
             put.add(FAMILY_NAME, COLUMN_DWPRESIGNATURE, Bytes.toBytes(record.dwPostSignature));
@@ -174,7 +174,7 @@ public class WRFDataWriter implements Runnable {
                     record.TickData.Ask.volqualifiers);
             put.add(FAMILY_NAME, COLUMN_ASK_EXCHANGE, record.TickData.Ask.exchange);
 
-            put.setWriteToWAL(false);
+            // put.setWriteToWAL(false);
 
             putHeapSize += put.heapSize();
 			putList.add(put);
