@@ -71,11 +71,16 @@ public class TickDataType {
         AuthCode = Bytes.toShort(Arrays.copyOfRange(raw, offset, offset + 2));
 		offset += 2;
 		//TIME_T	ExchangeTime;	/* TIME_T representing time of transaction or transactions */
-        ExchangeTime = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+
+        ExchangeTime = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
+        ExchangeTime = ExchangeTime >>> 32;
 		offset += 4;
+
 		//TIME_T	Beacon;		/* beacon time, used for ticordering based upon beacon */
-        Beacon = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+        Beacon = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
+        Beacon = Beacon >>> 32;
 		offset += 4;
+
 		//double	VWap;		/* vwap */
 		//VWap = Bytes.toDouble(Arrays.copyOfRange(raw, offset, offset + 8 + 1));
         VWap = ByteBuffer.wrap(Arrays.copyOfRange(raw, offset, offset + 8)).getDouble();

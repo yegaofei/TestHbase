@@ -57,7 +57,8 @@ public class WinROSFlowRecord {
 		//public int	RecordLength;	/* Total length of data rec in case different recs in future */
 		offset += 2;
 
-        Sequence = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+        Sequence = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
+        Sequence = Sequence >>> 32;
 		// public long	Sequence;		/* Counter for verifying buffer reliability */
 		offset += 4;
 

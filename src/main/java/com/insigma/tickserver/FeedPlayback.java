@@ -9,6 +9,7 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Java FeedPlayback
@@ -70,6 +71,10 @@ public class FeedPlayback implements Closeable {
 		}
 				
 		inputStream.readFully(dwTime);	
+
+
+        // System.out.println("dw Time is " + Bytes.toInt(dwTime));
+
 		totalBytesRead += dwTime.length;
 		
 		inputStream.readFully(nRecs);
@@ -191,28 +196,55 @@ public class FeedPlayback implements Closeable {
 			WinROSFlowRecord record = null;
 
 			long total = 0;
-
 			
 			playback.open();
 			
-			long startTime = System.currentTimeMillis();
+            // long startTime = System.currentTimeMillis();
+            long minExchangeTime = 0;
+            long maxExchangeTime = 0;
 			while ((record = playback.next()) != null) {
+                long exchangeTime = record.TickData.ExchangeTime + record.TickData.Beacon;
+                if (total == 0) {
+                    minExchangeTime = exchangeTime;
+                    maxExchangeTime = exchangeTime;
+                }
+
+                if (exchangeTime == 0) {
+                    continue;
+                }
+
+                if (exchangeTime > maxExchangeTime) {
+                    maxExchangeTime = exchangeTime;
+                } else if (exchangeTime < minExchangeTime) {
+                        minExchangeTime = exchangeTime;
+                }
+                // }
 				total++;
 				
-				if (total % 1000000 == 0) {
-					System.out.println(System.currentTimeMillis() + " " + total + " records read");
-				}
+                // if (total % 1000000 == 0) {
+                // System.out.println(System.currentTimeMillis() + " " + total +
+                // " records read");
+                // }
+
+
 			}
-			long overallSpendTime = System.currentTimeMillis()  - startTime;
-			
-			System.out.println("Total bytes read : " + playback.getTotalBytesRead() + " bytes");
-			System.out.println("Total records read : " + playback.getTotalRecordsRead());
-			double performance = ((double)playback.getTotalBytesRead() /(1024d * 1024d)) / (double)overallSpendTime * 1000;
-			System.out.println("Overall performance : " + performance + " MB per second");
+            // long overallSpendTime = System.currentTimeMillis() - startTime;
+            //
+            // System.out.println("Total bytes read : " +
+            // playback.getTotalBytesRead() + " bytes");
+            // System.out.println("Total records read : " +
+            // playback.getTotalRecordsRead());
+            // double performance = ((double)playback.getTotalBytesRead()
+            // /(1024d * 1024d)) / (double)overallSpendTime * 1000;
+            // System.out.println("Overall performance : " + performance +
+            // " MB per second");
 			
 			playback.close();
 
-			System.out.println("In total " + total + " records read");
+            System.out.println("In total " + total + " records read");
+            System.out.println("Min echange time " + minExchangeTime);
+            System.out.println("Max echange time " + maxExchangeTime);
+            System.out.println(new Date(maxExchangeTime * 1000));
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
