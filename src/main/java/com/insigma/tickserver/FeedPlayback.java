@@ -9,7 +9,6 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Date;
 
 /**
  * Java FeedPlayback
@@ -203,13 +202,14 @@ public class FeedPlayback implements Closeable {
             long minExchangeTime = 0;
             long maxExchangeTime = 0;
 			while ((record = playback.next()) != null) {
-                long exchangeTime = record.TickData.ExchangeTime + record.TickData.Beacon;
+                long exchangeTime = record.TickData.ExchangeTime;
                 if (total == 0) {
                     minExchangeTime = exchangeTime;
                     maxExchangeTime = exchangeTime;
                 }
 
-                if (exchangeTime == 0) {
+                if (exchangeTime <= 3) {
+                    // outputRecord(record);
                     continue;
                 }
 
@@ -244,7 +244,12 @@ public class FeedPlayback implements Closeable {
             System.out.println("In total " + total + " records read");
             System.out.println("Min echange time " + minExchangeTime);
             System.out.println("Max echange time " + maxExchangeTime);
-            System.out.println(new Date(maxExchangeTime * 1000));
+            // System.out.println(new Date(maxExchangeTime));
+
+            long du = maxExchangeTime - minExchangeTime;
+            System.out.println("maxExchangeTime-minExchangeTime = " + du);
+            double minutes = (double) du / 1000d / 60d;
+            System.out.println(minutes + " minutes");
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -255,5 +260,15 @@ public class FeedPlayback implements Closeable {
 		}
 
 	}
+
+    private static void outputRecord(WinROSFlowRecord record) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(record.dwPostSignature).append(",").append(record.RecordType).append(",")
+          .append(record.RecordLength).append(",").append(record.Sequence).append(",")
+          .append(record.Symbol).append(",").append(record.TickData.Flags).append(",")
+          .append(record.TickData.Beacon).append(",").append(record.TickData.ExchangeTime)
+          .append(",").append(record.TickData.SequenceNumber);
+        System.out.println(sb.toString());
+    }
 
 }

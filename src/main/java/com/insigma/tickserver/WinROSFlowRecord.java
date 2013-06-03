@@ -1,5 +1,6 @@
 package com.insigma.tickserver;
 
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.apache.hadoop.hbase.util.Bytes;
@@ -41,7 +42,9 @@ public class WinROSFlowRecord {
 		}
 		
 		int offset = 0;	
-        dwPreSignature = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+        dwPreSignature = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset,
+                                                                               offset + 4),
+                                                            ByteOrder.LITTLE_ENDIAN);
 		//public long	dwPreSignature;	/* sync verification -- FR_PRESIG -- */
 		offset += 4;
 
@@ -53,24 +56,30 @@ public class WinROSFlowRecord {
 		//public byte	Unused;			/* for ??? in future */
 		offset += 1;
 
-        RecordLength = Bytes.toShort(Arrays.copyOfRange(raw, offset, offset + 2));
+        RecordLength = EndienConvertion.unsignedShortToInt(Arrays.copyOfRange(raw, offset,
+                                                                              offset + 2),
+                                                           ByteOrder.LITTLE_ENDIAN);
 		//public int	RecordLength;	/* Total length of data rec in case different recs in future */
 		offset += 2;
 
-        Sequence = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
-        Sequence = Sequence >>> 32;
 		// public long	Sequence;		/* Counter for verifying buffer reliability */
+        Sequence = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset, offset + 4),
+                                                      ByteOrder.LITTLE_ENDIAN);
 		offset += 4;
 
 		//public char	[]Symbol;		/* Symbol for record */
-		Symbol = Bytes.toString(Arrays.copyOfRange(raw, offset, offset + 48));
+        Symbol = Bytes.toString(EndienConvertion.reverseBytes(Arrays.copyOfRange(raw, offset,
+                                                                                 offset + 48)))
+                      .trim();
 		offset += 48;
 
 		// public TickDataType	TickData;
         TickData.fromBytes(Arrays.copyOfRange(raw, offset, offset + TickDataType.RECORD_SIZE));
 		offset += TickDataType.RECORD_SIZE;
 
-        dwPostSignature = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+        dwPostSignature = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset,
+                                                                                offset + 4),
+                                                             ByteOrder.LITTLE_ENDIAN);
 		//public long	dwPostSignature;	/* sync verification -- FR_POSTSIG -- */	
 		offset += 4;
 	}

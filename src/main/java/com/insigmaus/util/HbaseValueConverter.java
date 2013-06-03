@@ -1,6 +1,6 @@
 package com.insigmaus.util;
 
-import com.insigma.tickserver.RegionInfo;
+
 
 
 /** 
@@ -16,22 +16,31 @@ public class HbaseValueConverter {
      */
     public static void main(String[] args) {
 
-        long regionId = 1000 % RegionInfo.REGION_COUNT;
-        System.out.println(regionId);
 
-        System.out.println(Long.valueOf("a", 16));
-        System.out.println(Integer.toHexString('a'));
-        System.out.println(Integer.toHexString('f'));
-        System.out.println(Integer.toHexString('A'));
-        System.out.println(Integer.toHexString('F'));
+        // long regionId = 1000 % RegionInfo.REGION_COUNT;
+        // System.out.println(regionId);
+        //
+        // System.out.println(Long.valueOf("a", 16));
+        // System.out.println(Integer.toHexString('a'));
+        // System.out.println(Integer.toHexString('f'));
+        // System.out.println(Integer.toHexString('A'));
+        // System.out.println(Integer.toHexString('F'));
 
-        System.out.println(convertAsc2Hex("\\x00\\x00\\x00\\x00\\x02\\xBC\\x84a"));
-        System.out.println(convertAsc2Hex("\\x00\\x00\\x00\\x00\\x02\\x9C\\x9C\\xC4"));
+        System.out.println(Long.valueOf("000bebb41fd7b28e", 16));
 
+        String s1 = convertAsc2Hex("\\x00\\x00\\x00=\\xE2\\xEA)\\xDC");
+        System.out.println(s1);
+        Long l1 = Long.valueOf(s1, 16);
+        System.out.println(l1);
+
+        String s2 = convertAsc2Hex("\\x02\\xF8\\xB5\\x8Ew\\xCC\\xF2\\x1E");
+        System.out.println(s2);
+        Long l2 = Long.valueOf(s2, 16);
+        System.out.println(l2);
 
     }
 
-    private static Long convertAsc2Hex(String asc) {
+    private static String convertAsc2Hex(String asc) {
         String[] strArray = asc.split("\\\\x");
         StringBuilder sb = new StringBuilder();
         for (String s : strArray) {
@@ -50,7 +59,7 @@ public class HbaseValueConverter {
             }
         }
 
-        return Long.valueOf(sb.toString(), 16);
+        return sb.toString();
     }
 
 

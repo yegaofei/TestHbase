@@ -67,7 +67,6 @@ public class WRFDataWriter implements Runnable {
     static final byte[] COLUMN_ASK_EXCHANGE = Bytes.toBytes("ae");
 
     public static final byte[] FAMILY_NAME = Bytes.toBytes("cf");
-    // public static final byte[] PRICEDATA_FAMILY_NAME = Bytes.toBytes("pf");
 
     private HTable wrfDataTable;
 
@@ -121,65 +120,71 @@ public class WRFDataWriter implements Runnable {
             put.add(FAMILY_NAME, COLUMN_RECORDLENGTH, Bytes.toBytes(record.RecordLength));
             put.add(FAMILY_NAME, COLUMN_SEQUENCE, Bytes.toBytes(record.Sequence));
             put.add(FAMILY_NAME, COLUMN_SYMBOL, Bytes.toBytes(record.Symbol.trim()));
-            put.add(FAMILY_NAME, COLUMN_DWPOSTSIGNATURE, Bytes.toBytes(record.dwPostSignature));
-            put.add(FAMILY_NAME, COLUMN_FLAGS, Bytes.toBytes(record.TickData.Flags));
-            put.add(FAMILY_NAME, COLUMN_SEQUENCESERIES,
-                    Bytes.toBytes(record.TickData.SequenceSeries));
-            put.add(FAMILY_NAME, COLUMN_CATEGORY, Bytes.toBytes(record.TickData.Category));
-            put.add(FAMILY_NAME, COLUMN_SUBCATEGORY, Bytes.toBytes(record.TickData.SubCategory));
-            put.add(FAMILY_NAME, COLUMN_LINEID, Bytes.toBytes(record.TickData.LineID));
-            put.add(FAMILY_NAME, COLUMN_AUTHCODE, Bytes.toBytes(record.TickData.AuthCode));
-
+            /*
+             * put.add(FAMILY_NAME, COLUMN_DWPOSTSIGNATURE,
+             * Bytes.toBytes(record.dwPostSignature)); put.add(FAMILY_NAME,
+             * COLUMN_FLAGS, Bytes.toBytes(record.TickData.Flags));
+             * put.add(FAMILY_NAME, COLUMN_SEQUENCESERIES,
+             * Bytes.toBytes(record.TickData.SequenceSeries));
+             * 
+             * put.add(FAMILY_NAME, COLUMN_CATEGORY,
+             * Bytes.toBytes(record.TickData.Category)); put.add(FAMILY_NAME,
+             * COLUMN_SUBCATEGORY, Bytes.toBytes(record.TickData.SubCategory));
+             * put.add(FAMILY_NAME, COLUMN_LINEID,
+             * Bytes.toBytes(record.TickData.LineID)); put.add(FAMILY_NAME,
+             * COLUMN_AUTHCODE, Bytes.toBytes(record.TickData.AuthCode));
+             */
             put.add(FAMILY_NAME, COLUMN_EXCHANGETIME, Bytes.toBytes(record.TickData.ExchangeTime));
             put.add(FAMILY_NAME, COLUMN_BEACON, Bytes.toBytes(record.TickData.Beacon));
-            put.add(FAMILY_NAME, COLUMN_VWAP, Bytes.toBytes(record.TickData.VWap));
-            put.add(FAMILY_NAME, COLUMN_SECQUALIFIERS, record.TickData.SecQualifiers);
-
-
-            put.add(FAMILY_NAME, COLUMN_TRADE_VALUE,
-                    Bytes.toBytes(record.TickData.Trade.value));
-            put.add(FAMILY_NAME, COLUMN_TRADE_SIZE,
-                    Bytes.toBytes(record.TickData.Trade.size));
-            put.add(FAMILY_NAME, COLUMN_TRADE_UCUMVOLUME,
-                    Bytes.toBytes(record.TickData.Trade.ucumvolume));
-            put.add(FAMILY_NAME, COLUMN_TRADE_FLAGS,
-                    Bytes.toBytes(record.TickData.Trade.flags));
-            put.add(FAMILY_NAME, COLUMN_TRADE_QUALIFIERS,
-                    record.TickData.Trade.qualifiers);
-            put.add(FAMILY_NAME, COLUMN_TRADE_VOLQUALIFIERS,
-                    record.TickData.Trade.volqualifiers);
-            put.add(FAMILY_NAME, COLUMN_TRADE_EXCHANGE, record.TickData.Trade.exchange);
-
-            put.add(FAMILY_NAME, COLUMN_BID_VALUE,
-                    Bytes.toBytes(record.TickData.Bid.value));
-            put.add(FAMILY_NAME, COLUMN_BID_SIZE, Bytes.toBytes(record.TickData.Bid.size));
-            put.add(FAMILY_NAME, COLUMN_BID_UCUMVOLUME,
-                    Bytes.toBytes(record.TickData.Bid.ucumvolume));
-            put.add(FAMILY_NAME, COLUMN_BID_FLAGS,
-                    Bytes.toBytes(record.TickData.Bid.flags));
-            put.add(FAMILY_NAME, COLUMN_BID_QUALIFIERS, record.TickData.Bid.qualifiers);
-            put.add(FAMILY_NAME, COLUMN_BID_VOLQUALIFIERS,
-                    record.TickData.Bid.volqualifiers);
-            put.add(FAMILY_NAME, COLUMN_BID_EXCHANGE, record.TickData.Bid.exchange);
-
-            put.add(FAMILY_NAME, COLUMN_ASK_VALUE,
-                    Bytes.toBytes(record.TickData.Ask.value));
-            put.add(FAMILY_NAME, COLUMN_ASK_SIZE, Bytes.toBytes(record.TickData.Ask.size));
-            put.add(FAMILY_NAME, COLUMN_ASK_UCUMVOLUME,
-                    Bytes.toBytes(record.TickData.Ask.ucumvolume));
-            put.add(FAMILY_NAME, COLUMN_ASK_FLAGS,
-                    Bytes.toBytes(record.TickData.Ask.flags));
-            put.add(FAMILY_NAME, COLUMN_ASK_QUALIFIERS, record.TickData.Ask.qualifiers);
-            put.add(FAMILY_NAME, COLUMN_ASK_VOLQUALIFIERS,
-                    record.TickData.Ask.volqualifiers);
-            put.add(FAMILY_NAME, COLUMN_ASK_EXCHANGE, record.TickData.Ask.exchange);
-
-            // put.setWriteToWAL(false);
+            /*
+             * put.add(FAMILY_NAME, COLUMN_VWAP,
+             * Bytes.toBytes(record.TickData.VWap)); put.add(FAMILY_NAME,
+             * COLUMN_SECQUALIFIERS, record.TickData.SecQualifiers);
+             * 
+             * 
+             * 
+             * put.add(FAMILY_NAME, COLUMN_TRADE_VALUE,
+             * Bytes.toBytes(record.TickData.Trade.value)); put.add(FAMILY_NAME,
+             * COLUMN_TRADE_SIZE, Bytes.toBytes(record.TickData.Trade.size));
+             * put.add(FAMILY_NAME, COLUMN_TRADE_UCUMVOLUME,
+             * Bytes.toBytes(record.TickData.Trade.ucumvolume));
+             * put.add(FAMILY_NAME, COLUMN_TRADE_FLAGS,
+             * Bytes.toBytes(record.TickData.Trade.flags)); put.add(FAMILY_NAME,
+             * COLUMN_TRADE_QUALIFIERS, record.TickData.Trade.qualifiers);
+             * put.add(FAMILY_NAME, COLUMN_TRADE_VOLQUALIFIERS,
+             * record.TickData.Trade.volqualifiers); put.add(FAMILY_NAME,
+             * COLUMN_TRADE_EXCHANGE, record.TickData.Trade.exchange);
+             * 
+             * put.add(FAMILY_NAME, COLUMN_BID_VALUE,
+             * Bytes.toBytes(record.TickData.Bid.value)); put.add(FAMILY_NAME,
+             * COLUMN_BID_SIZE, Bytes.toBytes(record.TickData.Bid.size));
+             * put.add(FAMILY_NAME, COLUMN_BID_UCUMVOLUME,
+             * Bytes.toBytes(record.TickData.Bid.ucumvolume));
+             * put.add(FAMILY_NAME, COLUMN_BID_FLAGS,
+             * Bytes.toBytes(record.TickData.Bid.flags)); put.add(FAMILY_NAME,
+             * COLUMN_BID_QUALIFIERS, record.TickData.Bid.qualifiers);
+             * put.add(FAMILY_NAME, COLUMN_BID_VOLQUALIFIERS,
+             * record.TickData.Bid.volqualifiers); put.add(FAMILY_NAME,
+             * COLUMN_BID_EXCHANGE, record.TickData.Bid.exchange);
+             * 
+             * put.add(FAMILY_NAME, COLUMN_ASK_VALUE,
+             * Bytes.toBytes(record.TickData.Ask.value)); put.add(FAMILY_NAME,
+             * COLUMN_ASK_SIZE, Bytes.toBytes(record.TickData.Ask.size));
+             * put.add(FAMILY_NAME, COLUMN_ASK_UCUMVOLUME,
+             * Bytes.toBytes(record.TickData.Ask.ucumvolume));
+             * put.add(FAMILY_NAME, COLUMN_ASK_FLAGS,
+             * Bytes.toBytes(record.TickData.Ask.flags)); put.add(FAMILY_NAME,
+             * COLUMN_ASK_QUALIFIERS, record.TickData.Ask.qualifiers);
+             * put.add(FAMILY_NAME, COLUMN_ASK_VOLQUALIFIERS,
+             * record.TickData.Ask.volqualifiers); put.add(FAMILY_NAME,
+             * COLUMN_ASK_EXCHANGE, record.TickData.Ask.exchange);
+             */
+            put.setWriteToWAL(false);
 
             putHeapSize += put.heapSize();
 			putList.add(put);
 			
-            if (total % 500 == 0) {
+            if (total % 1000 == 0) {
                 this.wrfDataTable.put(putList);
                 putList = new LinkedList<Put>();
 

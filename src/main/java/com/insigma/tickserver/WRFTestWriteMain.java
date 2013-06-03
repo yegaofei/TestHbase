@@ -139,6 +139,7 @@ public class WRFTestWriteMain {
             HColumnDescriptor hd = new HColumnDescriptor(familyName);
             hd.setMaxVersions(maxVersions);
             hd.setInMemory(true);
+            hd.setCompressionType(Compression.Algorithm.LZO);
             tableDescriptor.addFamily(hd);
         }
        // tableDescriptor.setValue(HTableDescriptor.SPLIT_POLICY, ConstantSizeRegionSplitPolicy.class.getName());

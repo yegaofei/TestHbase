@@ -1,6 +1,7 @@
 package com.insigma.tickserver;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.apache.hadoop.hbase.util.Bytes;
@@ -53,7 +54,8 @@ public class TickDataType {
 		
 		int offset = 0;
 		//WORD	Flags;	// indicates whether price and bid/ask have been split by winrosmt, trade or bidask data rec, unknown items
-		Flags = Bytes.toShort(Arrays.copyOfRange(raw, offset, offset + 2));
+        Flags = EndienConvertion.unsignedShortToInt(Arrays.copyOfRange(raw, offset, offset + 2),
+                                                    ByteOrder.LITTLE_ENDIAN);
 		offset += 2;
 		//BYTE	SequenceSeries;	/* 3 fields encoded here...passed from fnet */
 		SequenceSeries = raw[offset];
@@ -65,28 +67,34 @@ public class TickDataType {
 		SubCategory = raw[offset];
 		offset += 1;
 		//WORD	LineID;	/* identifies line incoming data came in on (used for sequence numbers sets) */
-        LineID = Bytes.toShort(Arrays.copyOfRange(raw, offset, offset + 2));
+        LineID = EndienConvertion.unsignedShortToInt(Arrays.copyOfRange(raw, offset, offset + 2),
+                                                     ByteOrder.LITTLE_ENDIAN);
 		offset += 2;
 		//WORD	AuthCode;	/* authcode */
-        AuthCode = Bytes.toShort(Arrays.copyOfRange(raw, offset, offset + 2));
+        AuthCode = EndienConvertion.unsignedShortToInt(Arrays.copyOfRange(raw, offset, offset + 2),
+                                                       ByteOrder.LITTLE_ENDIAN);
 		offset += 2;
-		//TIME_T	ExchangeTime;	/* TIME_T representing time of transaction or transactions */
 
-        ExchangeTime = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
-        ExchangeTime = ExchangeTime >>> 32;
-		offset += 4;
+		//TIME_T	ExchangeTime;	/* TIME_T representing time of transaction or transactions */
+        ExchangeTime = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset,
+                                                                             offset + 4),
+                                                          ByteOrder.LITTLE_ENDIAN);
+        offset += 4;
 
 		//TIME_T	Beacon;		/* beacon time, used for ticordering based upon beacon */
-        Beacon = Bytes.toLong(Arrays.copyOfRange(raw, offset, offset + 8));
-        Beacon = Beacon >>> 32;
-		offset += 4;
+        Beacon = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset, offset + 4),
+                                                    ByteOrder.LITTLE_ENDIAN);
+        offset += 4;
 
 		//double	VWap;		/* vwap */
 		//VWap = Bytes.toDouble(Arrays.copyOfRange(raw, offset, offset + 8 + 1));
-        VWap = ByteBuffer.wrap(Arrays.copyOfRange(raw, offset, offset + 8)).getDouble();
+        VWap = ByteBuffer.wrap(Arrays.copyOfRange(raw, offset, offset + 8))
+                         .order(ByteOrder.LITTLE_ENDIAN).getDouble();
 		offset += 8;
 		//DWORD32	SequenceNumber;	/* sequence number for LineID */
-        SequenceNumber = Bytes.toInt(Arrays.copyOfRange(raw, offset, offset + 4));
+        SequenceNumber = EndienConvertion.unsignedIntToLong(Arrays.copyOfRange(raw, offset,
+                                                                               offset + 4),
+                                                            ByteOrder.LITTLE_ENDIAN);
 		offset += 4;
 		//BYTE	SecQualifiers[TICKDATA_SECQUAL_SIZE];
         SecQualifiers = Arrays.copyOfRange(raw, offset, offset + TICKDATA_SECQUAL_SIZE);
